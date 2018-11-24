@@ -117,4 +117,4 @@ else:
 I= Image.fromarray(img)
 I.show()
 # I.convert("L")
-# I.save('/Users/fereira/Documents/MATLAB/test.png','PNG')
+# I.save('path/to/file/test.png','PNG')
