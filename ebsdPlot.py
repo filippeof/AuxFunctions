@@ -14,7 +14,7 @@ def readByToken(hl,token):
             line.strip()
             return line
 
-fname = sys.argv[1] # Read file name from first bash input
+fname = sys.argv[1] # Read file name from first bash input ($1)
 # fname= 'path/to/file.ang'
 file_name, extension = splitext(fname)
 
@@ -49,8 +49,6 @@ if extension=='.ang': # EDAX file
     # nRows=np.array((((max_x-min_x)/stepSizeX)+1), dtype=int)
     # nCols=np.array((((max_y-min_y)/stepSizeY)+1), dtype=int)
 
-    print stepSizeX,stepSizeY,nRows,nCols
-
     x_id = np.array(x/stepSizeY, dtype=int)
 
     y_id = np.array(y/stepSizeX, dtype=int)
@@ -60,12 +58,61 @@ if extension=='.ang': # EDAX file
     # img = np.zeros((nCols,nRows))
     # for i in range(len(x_id)):
     #     img[y_id[i], x_id[i]]=prop[i]
-    # img=img[~np.all(img == 0, axis=1)]
+    # img=img[~np.all(img == 0, axis=1)] #remove all 0 lines
 
     idsR = ((x_id+1) + y_id*nCols)-1
 
     img[0][idsR] = prop
     img = img.reshape(nRows,nCols)
+
+elif extension=='.ctf':  # Channel file
+    # ColumnNames =  {'Phase' 'X' 'Y' 'Bands' 'Error' 'Euler 1' 'Euler 2' 'Euler 3' 'MAD' 'BC' 'BS'}
+    cols2read = [1, 2, 9]  #x,y,bc
+    # CommentStyle=""
+
+    with open(fname, 'r') as fobj:
+        hl = [next(fobj) for x in xrange(100)] # read first 100 lines
+        gridType = readByToken(hl, 'JobMode')
+        nRows = int(readByToken(hl, 'XCells'))
+        nCols = int(readByToken(hl, 'YCells'))
+        stepSizeX = float(readByToken(hl, 'XStep'))
+        stepSizeY = float(readByToken(hl, 'YStep'))
+        for num, line in enumerate(hl, 1):
+            if 'Bands' in line:
+                numberHeader = num
+
+    file_data = pd.read_csv(fname, sep='\t', skiprows=range(numberHeader-1), skipinitialspace=True, header=0, usecols=cols2read, decimal=",")
+    headerNames=file_data.columns.values.tolist()
+    prop = np.array(file_data[headerNames[2]], dtype=int)
+
+    if len(prop) == nRows*nCols:
+        img = np.zeros((1, nCols*nRows))
+        img[0][:] = prop
+        img = img.reshape(nCols, nRows)
+    else:
+
+        x = np.array(file_data[headerNames[0]], dtype=float)
+        y = np.array(file_data[headerNames[1]], dtype=float)
+        max_x = max(x)
+        min_x = min(x)
+        max_y = max(y)
+        min_y = min(y)
+
+        nRows = np.array((((max_x - min_x) / stepSizeX) + 1), dtype=int)
+        nCols = np.array((((max_y - min_y) / stepSizeY) + 1), dtype=int)
+
+        x_id = np.array(x / stepSizeY, dtype=int)
+        y_id = np.array(y / stepSizeX, dtype=int)
+
+        img = np.zeros((1, nCols * nRows))
+
+        idsR = ((x_id + 1) + y_id * nRows) - 1
+
+        img[0][idsR] = prop
+        img = img.reshape(nCols,nRows)
+else:
+    print "Error: File with extension %s not recognized or not yet supported.",extension
+
 
 I= Image.fromarray(img)
 I.show()
