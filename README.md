@@ -13,5 +13,4 @@ Some scripts:
    ```
    Save the file as `Show EBSD`. The Service will be available when you click in a file with the right button>Services>Show EBSD
    
-   **linearInterceptSP.m:** Linear intercept method for a single phase
-   
+   **linearInterceptSP.m:** Linear intercept method for a single phase from EBSD data using [MTEX](https://mtex-toolbox.github.io/)
