@@ -16,6 +16,7 @@ def readByToken(hl,token):
 
 fname = sys.argv[1] # Read file name from first bash input ($1)
 # fname= 'path/to/file.ang'
+# fname='/home/ffer/Documents/programming/map20190830220158976_Rescan_clean-ps.ang'
 file_name, extension = splitext(fname)
 
 if extension=='.ang': # EDAX file
@@ -64,7 +65,7 @@ if extension=='.ang': # EDAX file
 
     img[0][idsR] = prop
     img = img.reshape(nRows,nCols)
-
+    
 elif extension=='.ctf':  # Channel file
     # ColumnNames =  {'Phase' 'X' 'Y' 'Bands' 'Error' 'Euler 1' 'Euler 2' 'Euler 3' 'MAD' 'BC' 'BS'}
     cols2read = [1, 2, 9]  #x,y,bc
@@ -111,10 +112,11 @@ elif extension=='.ctf':  # Channel file
         img[0][idsR] = prop
         img = img.reshape(nCols,nRows)
 else:
-    print "Error: File with extension %s not recognized or not yet supported.",extension
+    print ("Error: File with extension %s not recognized or not yet supported.",extension)
 
-
+img = img.astype(np.uint8)
 I= Image.fromarray(img)
 I.show()
+
 # I.convert("L")
 # I.save('path/to/file/test.png','PNG')
